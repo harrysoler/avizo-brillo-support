@@ -92,8 +92,19 @@ case "$cmd" in
 	*) die "invalid command: $cmd (see '$0 -h')";;
 esac
 
+if command -v brillo >/dev/null; then
+	prog='brillo'
+	opts="${dev:+-s $dev} -u 15000" # 150ms = 15000us (micro)
 
-if command -v brightnessctl >/dev/null; then
+	case "$cmd" in
+		+) brillo $opts -q -A "$value";;
+		-) brillo $opts -q -U "$value";;
+		=) brillo $opts -q -S "$value";;
+	esac
+
+	light=$(brillo g)
+	light=${light%.*}
+elif command -v brightnessctl >/dev/null; then
 	prog='brightnessctl'
 	opts="${dev:+-d $dev}"
 	out=$(brightnessctl $opts ${exp:+-e$exp} -m set "${value}%${cmd}")
